@@ -547,23 +547,24 @@ void QalcosonicNfc::publishSensors() {
                     ESP_LOGI(TAG, "Error Flags Raw: %s", str_error);
                     if(this->error_flags_raw_) this->error_flags_raw_->publish_state(str_error);
 
-                    if(this->error_reconfiguration_warning_) this->error_reconfiguration_warning_->publish_state(buf[0] & (1 << 1));
-                    if(this->error_no_consumption_) this->error_no_consumption_->publish_state(buf[0] & (1 << 2));
-                    if(this->error_damage_meter_housing_) this->error_damage_meter_housing_->publish_state(buf[0] & (1 << 3));
-                    if(this->error_calculator_hardware_failure_) this->error_calculator_hardware_failure_->publish_state(buf[0] & (1 << 4));
+                    // Error codes 1/2/4/8 of each display digit map to bits 0..3 of the corresponding byte.
+                    if(this->error_reconfiguration_warning_) this->error_reconfiguration_warning_->publish_state(buf[0] & (1 << 0));
+                    if(this->error_no_consumption_) this->error_no_consumption_->publish_state(buf[0] & (1 << 1));
+                    if(this->error_damage_meter_housing_) this->error_damage_meter_housing_->publish_state(buf[0] & (1 << 2));
+                    if(this->error_calculator_hardware_failure_) this->error_calculator_hardware_failure_->publish_state(buf[0] & (1 << 3));
 
-                    if(this->error_leakage_) this->error_leakage_->publish_state(buf[1] & (1 << 1));
-                    if(this->error_burst_) this->error_burst_->publish_state(buf[1] & (1 << 2));
-                    if(this->error_optical_communication_) this->error_optical_communication_->publish_state(buf[1] & (1 << 3));
-                    if(this->error_low_battery_) this->error_low_battery_->publish_state(buf[1] & (1 << 4));
+                    if(this->error_leakage_) this->error_leakage_->publish_state(buf[1] & (1 << 0));
+                    if(this->error_burst_) this->error_burst_->publish_state(buf[1] & (1 << 1));
+                    if(this->error_optical_communication_) this->error_optical_communication_->publish_state(buf[1] & (1 << 2));
+                    if(this->error_low_battery_) this->error_low_battery_->publish_state(buf[1] & (1 << 3));
 
-                    if(this->error_software_failure_) this->error_software_failure_->publish_state(buf[2] & (1 << 3));
-                    if(this->error_hardware_failure_) this->error_hardware_failure_->publish_state(buf[2] & (1 << 4));
+                    if(this->error_software_failure_) this->error_software_failure_->publish_state(buf[2] & (1 << 2));
+                    if(this->error_hardware_failure_) this->error_hardware_failure_->publish_state(buf[2] & (1 << 3));
 
-                    if(this->error_no_signal_) this->error_no_signal_->publish_state(buf[3] & (1 << 1));
-                    if(this->error_reverse_flow_) this->error_reverse_flow_->publish_state(buf[3] & (1 << 2));
-                    if(this->error_flow_rate_) this->error_flow_rate_->publish_state(buf[3] & (1 << 3));
-                    if(this->error_freeze_alert_) this->error_freeze_alert_->publish_state(buf[3] & (1 << 4));
+                    if(this->error_no_signal_) this->error_no_signal_->publish_state(buf[3] & (1 << 0));
+                    if(this->error_reverse_flow_) this->error_reverse_flow_->publish_state(buf[3] & (1 << 1));
+                    if(this->error_flow_rate_) this->error_flow_rate_->publish_state(buf[3] & (1 << 2));
+                    if(this->error_freeze_alert_) this->error_freeze_alert_->publish_state(buf[3] & (1 << 3));
                     break;
                 }
 
