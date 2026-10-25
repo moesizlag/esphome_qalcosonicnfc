@@ -1,0 +1,102 @@
+# Qalcosonic W1 NFC reader on an ESP32-S3 DevKit with a PN5180 module.
+#
+# Wiring (ESP32-S3 -> PN5180):
+#   5V     -> 5V      (the PN5180 RF stage needs a real 5 V supply, see note below)
+#   3V3    -> 3.3V
+#   GND    -> GND
+#   GPIO12 -> SCK
+#   GPIO13 -> MISO
+#   GPIO11 -> MOSI
+#   GPIO10 -> NSS
+#   GPIO9  -> BUSY
+#   GPIO8  -> RST
+#
+# Note: on many ESP32-S3 boards with two USB-C ports the 5V pin is only fed
+# from USB when the "IN-OUT" (or "USB-OTG") solder pads are bridged.
+# Measure 5V under load if the meter is never found.
+#
+# Do not use GPIO19/20 (USB) or GPIO0/3/45/46 (strapping pins) for the PN5180.
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/moesizlag/esphome_qalcosonicnfc
+      ref: w1-fixes
+    components: [qalcosonicnfc]
+
+esphome:
+  name: wasserzaehler-nfc
+  friendly_name: Wasserzähler
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+logger:
+  logs:
+    qalcosonicnfc: INFO
+    PN5180: INFO
+    PN5180ISO15693: INFO
+
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Wasserzaehler-Fallback"
+    password: !secret ap_password
+
+captive_portal:
+
+button:
+  - platform: template
+    name: "Zähler jetzt auslesen"
+    on_press:
+      - component.update: qalcosonicnfc_id
+
+qalcosonicnfc:
+  id: qalcosonicnfc_id
+  update_interval: 120s
+  consecutive_errors_limit: 5
+  pn5180_mosi_pin: GPIO11
+  pn5180_miso_pin: GPIO13
+  pn5180_sck_pin:  GPIO12
+  pn5180_nss_pin:  GPIO10
+  pn5180_busy_pin: GPIO9
+  pn5180_rst_pin:  GPIO8
+  water_usage_sensor:
+    name: "Wasserstand"
+  water_flow_sensor:
+    name: "Durchfluss"
+  water_temperature_sensor:
+    name: "Wassertemperatur"
+  external_temperature_sensor:
+    name: "Umgebungstemperatur"
+  battery_level_sensor:
+    name: "Batterie Zähler"
+  timepoint_sensor:
+    name: "Zählerzeit"
+    timezone: "Europe/Berlin"
+    disabled_by_default: true
+  error_flags_raw:
+    name: "Fehlercodes (roh)"
+  error_leakage:
+    name: "Leckage"
+  error_burst:
+    name: "Rohrbruch"
+  error_low_battery:
+    name: "Batterie schwach"
+  error_freeze_alert:
+    name: "Frostwarnung"
+  error_reverse_flow:
+    name: "Rückfluss"
+  consecutive_errors_sensor:
+    name: "Fehlversuche in Folge"

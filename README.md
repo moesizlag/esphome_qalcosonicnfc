@@ -1,6 +1,14 @@
 # esphome_qalcosonicnfc
 ESPHome component for reading an Axioma Qalcosonic W1 water meter via a PN5180 NFC chip
 
+> **Fork note (branch `w1-fixes`):** this fork of [dbmaxpayne/esphome_qalcosonicnfc](https://github.com/dbmaxpayne/esphome_qalcosonicnfc) adds
+> - PN5180 recovery after BUSY timeouts (upstream PR #28, fixes alternating "No card detected!" reads, #27)
+> - corrected error flag bit mapping (codes 1/2/4/8 → bits 0..3; low battery, leakage etc. were shifted by one bit)
+> - default name for `timepoint_sensor`, so configs without it validate on ESPHome 2026.4+ (#23)
+> - `size_t` SPI receive loop counter (an `uint8_t` counter loops forever for responses above 255 bytes)
+>
+> An ESP32-S3 example is in [examples/qalcosonic-w1-esp32s3.yaml](examples/qalcosonic-w1-esp32s3.yaml).
+
 ## Needed components
 - ESP32
 - PN5180-NFC module (Can be easily obtained via AliExpress. I paid around 5 USD in August 2025.)
