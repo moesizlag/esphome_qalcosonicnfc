@@ -190,7 +190,7 @@ CONFIG_SCHEMA = (
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,),
             cv.Optional(CONF_RAW_DATA_SENSOR, default={ CONF_NAME: "M-BUS raw data",}): text_sensor.text_sensor_schema(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,),
-            cv.Optional(CONF_TIMEPOINT_SENSOR, default={}): cv.Schema({
+            cv.Optional(CONF_TIMEPOINT_SENSOR, default={ CONF_NAME: "Time point",}): cv.Schema({
                 cv.Optional(CONF_NAME, default="Time point"): cv.string,
                 cv.Optional(CONF_TIMEZONE): validate_tz,
             }).extend(

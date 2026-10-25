@@ -462,7 +462,7 @@ bool PN5180::transceiveCommand(uint8_t *sendBuffer, size_t sendBufferLen, uint8_
   this->NSS_->digital_write(LOW);
   delay(2);
   // 2.
-  for (uint8_t i=0; i<recvBufferLen; i++) {
+  for (size_t i=0; i<recvBufferLen; i++) {
     recvBuffer[i] = this->SPIDevice_->transfer_byte(0xff);
   }
   // 3.
