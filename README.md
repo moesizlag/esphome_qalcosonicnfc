@@ -6,6 +6,7 @@ ESPHome component for reading an Axioma Qalcosonic W1 water meter via a PN5180 N
 > - corrected error flag bit mapping (codes 1/2/4/8 → bits 0..3; low battery, leakage etc. were shifted by one bit)
 > - default name for `timepoint_sensor`, so configs without it validate on ESPHome 2026.4+ (#23)
 > - `size_t` SPI receive loop counter (an `uint8_t` counter loops forever for responses above 255 bytes)
+> - no more `-Wformat` warnings on ESP-IDF builds, and ID/serial number buffers large enough for 10-digit values (serial numbers were truncated)
 >
 > An ESP32-S3 example is in [examples/qalcosonic-w1-esp32s3.yaml](examples/qalcosonic-w1-esp32s3.yaml).
 
