@@ -17,6 +17,7 @@
 // Lesser General Public License for more details.
 //
 #include "esphome/core/defines.h"
+#include <cinttypes>
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
 #include "qalcosonicnfc.h"
@@ -341,8 +342,8 @@ void QalcosonicNfc::publishSensors() {
                          (readBuffer[start_idx + 9] >> 4) * 100000 + (readBuffer[start_idx + 9] & 0x0F) * 10000 +
                          (readBuffer[start_idx + 8] >> 4) * 1000 + (readBuffer[start_idx + 8] & 0x0F) * 100 +
                          (readBuffer[start_idx + 7] >> 4) * 10 + (readBuffer[start_idx + 7] & 0x0F);
-    char str_id_number[9];
-    snprintf(str_id_number, sizeof(str_id_number), "%08u", id_number);
+    char str_id_number[11];
+    snprintf(str_id_number, sizeof(str_id_number), "%08" PRIu32, id_number);
     ESP_LOGI(TAG, "ID Number: %s", str_id_number);
     if(this->meter_id_sensor_) this->meter_id_sensor_->publish_state(str_id_number);
 
@@ -433,21 +434,21 @@ void QalcosonicNfc::publishSensors() {
         switch (vif << 8 | vife) {
             case 0x1300: {
                 int32_t waterUsage = int32_t(buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0]);
-                ESP_LOGI(TAG, "Water Usage: %iL / %1.3fm³", waterUsage, waterUsage/1000.0f);
+                ESP_LOGI(TAG, "Water Usage: %" PRId32 "L / %1.3fm³", waterUsage, waterUsage/1000.0f);
                 if(this->water_usage_sensor_) this->water_usage_sensor_->publish_state(waterUsage/1000.0f);
                 break;
             }
 
             case 0x933b: {
                 int32_t waterUsage = int32_t(buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0]);
-                ESP_LOGI(TAG, "Water Usage (Only Positive): %iL / %1.3fm³", waterUsage, waterUsage/1000.0f);
+                ESP_LOGI(TAG, "Water Usage (Only Positive): %" PRId32 "L / %1.3fm³", waterUsage, waterUsage/1000.0f);
                 if(this->water_usage_positive_sensor_) this->water_usage_positive_sensor_->publish_state(waterUsage/1000.0f);
                 break;
             }
 
             case 0x933c: {
                 int32_t waterUsage = int32_t(buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0]);
-                ESP_LOGI(TAG, "Water Usage (Only Negative): %iL / %1.3fm³", waterUsage, waterUsage/1000.0f);
+                ESP_LOGI(TAG, "Water Usage (Only Negative): %" PRId32 "L / %1.3fm³", waterUsage, waterUsage/1000.0f);
                 if(this->water_usage_negative_sensor_) this->water_usage_negative_sensor_->publish_state(waterUsage/1000.0f);
                 break;
             }
@@ -478,7 +479,7 @@ void QalcosonicNfc::publishSensors() {
                 int32_t hour = buf[1] & 0x1F;
                 int32_t day = buf[2] & 0x1F;
                 int32_t month = buf[3] & 0x0F;
-                int32_t year = (buf[2] >> 5 | (buf[3] >> 1) & 0xF8) + 2000;
+                int32_t year = ((buf[2] >> 5) | ((buf[3] >> 1) & 0xF8)) + 2000;
                 char str_timepoint[32];
                 if (!this->timezone_.empty()) {
                     setenv("TZ", this->timezone_.c_str(), 1);
@@ -496,7 +497,7 @@ void QalcosonicNfc::publishSensors() {
                     strftime(str_timepoint, sizeof(str_timepoint), "%Y-%m-%dT%H:%M:%S%z", &timeinfo);
                 } else {
                     // fallback if timezone is not set
-                    snprintf(str_timepoint, sizeof(str_timepoint), "%04u-%02u-%02u %02u:%02u", year, month, day, hour, minute);
+                    snprintf(str_timepoint, sizeof(str_timepoint), "%04" PRId32 "-%02" PRId32 "-%02" PRId32 " %02" PRId32 ":%02" PRId32, year, month, day, hour, minute);
                 }
                 ESP_LOGI(TAG, "Timepoint: %s", str_timepoint);
                 if(this->timepoint_sensor_) this->timepoint_sensor_->publish_state(str_timepoint);
@@ -504,7 +505,7 @@ void QalcosonicNfc::publishSensors() {
                 // publish the timepoint string as raw data without any date math
                 // may be offset from the current time by one hour because the meter does not switch to/from DST
                 char str_timepoint_raw[17];
-                snprintf(str_timepoint_raw, sizeof(str_timepoint_raw), "%04u-%02u-%02u %02u:%02u", year, month, day, hour, minute);
+                snprintf(str_timepoint_raw, sizeof(str_timepoint_raw), "%04" PRId32 "-%02" PRId32 "-%02" PRId32 " %02" PRId32 ":%02" PRId32, year, month, day, hour, minute);
                 ESP_LOGI(TAG, "Timepoint raw: %s", str_timepoint_raw);
                 if(this->timepoint_sensor_raw_) this->timepoint_sensor_raw_->publish_state(str_timepoint_raw);
                 break;
@@ -530,9 +531,9 @@ void QalcosonicNfc::publishSensors() {
                         // fallback if the meter sends it as a standard binary integer
                         serialNumber = uint32_t(buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0]);
                     }
-                    ESP_LOGI(TAG, "Serial Number: %08u", serialNumber);
-                    char str_serial_number[9]; 
-                    snprintf(str_serial_number, sizeof(str_serial_number), "%08u", serialNumber);
+                    ESP_LOGI(TAG, "Serial Number: %08" PRIu32, serialNumber);
+                    char str_serial_number[11]; 
+                    snprintf(str_serial_number, sizeof(str_serial_number), "%08" PRIu32, serialNumber);
                     if(this->serial_number_sensor_) this->serial_number_sensor_->publish_state(str_serial_number);
                     break;
                 }
@@ -571,7 +572,7 @@ void QalcosonicNfc::publishSensors() {
             case 0x2400:
                 {
                     uint32_t operatingTimeSec = uint32_t(buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0]);
-                    ESP_LOGI(TAG, "Operating Time: %u seconds (%.1f days)", operatingTimeSec, operatingTimeSec / 86400.0f);
+                    ESP_LOGI(TAG, "Operating Time: %" PRIu32 " seconds (%.1f days)", operatingTimeSec, operatingTimeSec / 86400.0f);
                     if(this->operating_time_sensor_) this->operating_time_sensor_->publish_state(operatingTimeSec);
                     break;
                 }
@@ -579,7 +580,7 @@ void QalcosonicNfc::publishSensors() {
             case 0x2000:
                 {
                     uint32_t onTimeSec = uint32_t(buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0]);
-                    ESP_LOGI(TAG, "On Time: %u seconds (%.1f days)", onTimeSec, onTimeSec / 86400.0f);
+                    ESP_LOGI(TAG, "On Time: %" PRIu32 " seconds (%.1f days)", onTimeSec, onTimeSec / 86400.0f);
                     if(this->on_time_sensor_) this->on_time_sensor_->publish_state(onTimeSec);
                     break;
                 }
